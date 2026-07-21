@@ -50,7 +50,7 @@ export default function Home() {
           Setiap gambar ada cerita. Tunjukan pesona kalian ke isi kantor Skyshi
         </h1>
         <p className="font-body-lg text-on-surface-variant max-w-xl">
-          Kira-kira foto masa kecil ini milik siapa saja?
+          Kira-kira foto masa kecil ini milik siapa yaaa?
         </p>
       </section>
 
