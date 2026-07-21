@@ -11,11 +11,23 @@ datasource db {
 model Memory {
   id          String   @id @default(uuid())
   caption     String   @db.Text
-  imageUrl    String   // URL preview/embed gambar dari Google Drive
-  userName    String?  // Nama pemilik untuk ditampilkan
-  userAvatar  String?  // Avatar URL pemilik dari Google OAuth
+  imageUrl    String   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  votes       Vote[]
 
   @@map("memories")
+}
+
+model Vote {
+  id            String   @id @default(uuid())
+  memoryId      String
+  voterName     String
+  candidateName String
+  createdAt     DateTime @default(now())
+  
+  memory        Memory   @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+
+  @@unique([memoryId, voterName])
+  @@map("votes")
 }

@@ -1,95 +1,191 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+    /* ── Colors (exact match code.html) ── */
+    --color-surface: #f7f9fb;
+    --color-surface-dim: #d8dadc;
+    --color-surface-bright: #f7f9fb;
+    --color-surface-container-lowest: #ffffff;
+    --color-surface-container-low: #f2f4f6;
+    --color-surface-container: #eceef0;
+    --color-surface-container-high: #e6e8ea;
+    --color-surface-container-highest: #e0e3e5;
+    --color-on-surface: #191c1e;
+    --color-on-surface-variant: #434655;
+    --color-inverse-surface: #2d3133;
+    --color-inverse-on-surface: #eff1f3;
+    --color-outline: #737686;
+    --color-outline-variant: #c3c6d7;
+    --color-surface-tint: #2563eb;
+    --color-primary: #2563eb;
+    --color-on-primary: #ffffff;
+    --color-primary-container: #dbe1ff;
+    --color-on-primary-container: #00174b;
+    --color-inverse-primary: #b4c5ff;
+    --color-secondary: #565e74;
+    --color-on-secondary: #ffffff;
+    --color-secondary-container: #dae2fd;
+    --color-on-secondary-container: #5c647a;
+    --color-tertiary: #2f5a6e;
+    --color-on-tertiary: #ffffff;
+    --color-tertiary-container: #487387;
+    --color-on-tertiary-container: #e1f4ff;
+    --color-background: #f7f9fb;
+    --color-on-background: #191c1e;
+
+    /* ── Font Families (keyed to Next.js font variables) ── */
+    --font-display: var(--font-epilogue), "Epilogue", sans-serif;
+    --font-headline-lg: var(--font-epilogue), "Epilogue", sans-serif;
+    --font-headline-lg-mobile: var(--font-epilogue), "Epilogue", sans-serif;
+    --font-headline-md: var(--font-epilogue), "Epilogue", sans-serif;
+    --font-caption: var(--font-epilogue), "Epilogue", sans-serif;
+    --font-body-lg: var(--font-manrope), "Manrope", sans-serif;
+    --font-body-md: var(--font-manrope), "Manrope", sans-serif;
+    --font-label-sm: var(--font-manrope), "Manrope", sans-serif;
+
+    /* ── Font Sizes (Tailwind v4 CSS var tokens) ── */
+    --text-display: 48px;
+    --text-display--line-height: 56px;
+    --text-display--letter-spacing: -0.02em;
+    --text-display--font-weight: 700;
+
+    --text-headline-lg: 32px;
+    --text-headline-lg--line-height: 40px;
+    --text-headline-lg--font-weight: 600;
+
+    --text-headline-lg-mobile: 28px;
+    --text-headline-lg-mobile--line-height: 36px;
+    --text-headline-lg-mobile--font-weight: 600;
+
+    --text-headline-md: 24px;
+    --text-headline-md--line-height: 32px;
+    --text-headline-md--font-weight: 600;
+
+    --text-body-lg: 18px;
+    --text-body-lg--line-height: 28px;
+    --text-body-lg--font-weight: 400;
+
+    --text-body-md: 16px;
+    --text-body-md--line-height: 24px;
+    --text-body-md--font-weight: 400;
+
+    --text-label-sm: 12px;
+    --text-label-sm--line-height: 16px;
+    --text-label-sm--letter-spacing: 0.05em;
+    --text-label-sm--font-weight: 600;
+
+    --text-caption: 16px;
+    --text-caption--line-height: 22px;
+    --text-caption--font-weight: 500;
 }
 
-:root {
-  --background: #050505;
-  --foreground: #fcee0a;
-  --card: #1a1a1a;
-  --card-foreground: #fcee0a;
-  --popover: #1a1a1a;
-  --popover-foreground: #fcee0a;
-  --primary: #fcee0a;
-  --primary-foreground: #000000;
-  --secondary: #00f0ff;
-  --secondary-foreground: #000000;
-  --muted: #222222;
-  --muted-foreground: #a0a0a0;
-  --accent: #ff003c;
-  --accent-foreground: #ffffff;
-  --destructive: #ff003c;
-  --destructive-foreground: #ffffff;
-  --border: #333333;
-  --input: #1a1a1a;
-  --ring: #fcee0a;
-  --radius: 0px;
-}
-
-.dark {
-  --background: #050505;
-  --foreground: #fcee0a;
-}
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground font-sans;
-    background-image: 
-      linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-      linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-    background-size: 100% 2px, 3px 100%;
-  }
+    body {
+        @apply text-on-surface;
+        font-family: var(--font-body-md);
+        background-color: #f0f4ff;
+        background-image:
+            /* Soft radial gradient blob top-left */
+            radial-gradient(ellipse 80% 60% at 10% -10%, rgba(37, 99, 235, 0.08) 0%, transparent 60%),
+            /* Soft radial gradient blob bottom-right */
+            radial-gradient(ellipse 70% 60% at 90% 110%, rgba(37, 99, 235, 0.06) 0%, transparent 60%),
+            /* Grid lines */
+            linear-gradient(rgba(37, 99, 235, 0.055) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(37, 99, 235, 0.055) 1px, transparent 1px);
+        background-size: auto, auto, 40px 40px, 40px 40px;
+        background-position: 0 0, 100% 100%, -1px -1px, -1px -1px;
+    }
 }
 
-.cyber-grid {
-  background-image: linear-gradient(to right, #333 1px, transparent 1px),
-    linear-gradient(to bottom, #333 1px, transparent 1px);
-  background-size: 40px 40px;
+
+/* Scrapbook UI Custom Styles from Design */
+.masonry-grid {
+    column-count: 1;
+    column-gap: 24px;
 }
 
-.clip-path-cyber {
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%);
+@media (min-width: 768px) {
+    .masonry-grid {
+        column-count: 2;
+    }
 }
 
-.clip-path-cyber-inv {
-  clip-path: polygon(15px 0, 100% 0, 100% 100%, 0 100%, 0 15px);
+@media (min-width: 1024px) {
+    .masonry-grid {
+        column-count: 3;
+    }
 }
 
-.neon-glow {
-  box-shadow: 0 0 10px var(--primary);
+.memory-card {
+    break-inside: avoid;
+    margin-bottom: 24px;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.neon-glow-blue {
-  box-shadow: 0 0 10px var(--secondary);
+.memory-card:hover {
+    transform: translateY(-4px);
 }
 
-.glitch-text {
-  text-shadow: 2px 0 #ff003c, -2px 0 #00f0ff;
+.paper-shadow {
+    box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.1), 0 8px 10px -6px rgba(37, 99, 235, 0.05);
+}
+
+.scrapbook-shadow {
+    box-shadow: 0 10px 30px -5px rgba(0, 74, 198, 0.15);
+}
+
+.backdrop-blur-strong {
+    backdrop-filter: blur(8px) brightness(0.85);
+}
+
+.vote-btn.active {
+    background-color: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.vote-btn.active .vote-badge {
+    background-color: white;
+    color: var(--color-primary);
+}
+
+.vote-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background-color: var(--color-primary);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Global input focus: blue border, no black outline */
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none !important;
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.max-w-container-max-width {
+    max-width: 1280px;
 }
