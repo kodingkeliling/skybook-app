@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useVoterStore } from "@/stores/use-voter-store";
 import { Users, X, ChevronUp, ChevronRight, Loader2, ArrowRight } from "lucide-react";
@@ -46,24 +46,42 @@ export default function RandomVoteModal({ onClose }: { onClose: () => void }) {
         fetchMemories();
     }, [onClose]);
 
-    const fetchVotes = useCallback(async (memId: string) => {
-        setVotesLoading(true);
-        try {
-            const res = await axios.get(`/api/memories/${memId}/votes`);
-            setVotes(res.data);
-        } catch {
-            // silent
-        } finally {
-            setVotesLoading(false);
-        }
-    }, []);
-
     useEffect(() => {
         if (memories.length > 0) {
             setShowDetails(false);
-            fetchVotes(memories[currentIndex].id);
+            const memId = memories[currentIndex].id;
+            setVotesLoading(true);
+
+            // Establish real-time EventSource listener
+            const eventSource = new EventSource(`/api/memories/${memId}/votes/stream`);
+
+            eventSource.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (Array.isArray(data)) {
+                        setVotes(data);
+                        setVotesLoading(false);
+                    }
+                } catch {
+                    // ignore connected and other non-JSON events
+                }
+            };
+
+            eventSource.onerror = (err) => {
+                console.error("SSE stream fail. Falling back to REST fetch:", err);
+                axios.get(`/api/memories/${memId}/votes`)
+                    .then((res) => {
+                        setVotes(res.data);
+                        setVotesLoading(false);
+                    })
+                    .catch(() => { });
+            };
+
+            return () => {
+                eventSource.close();
+            };
         }
-    }, [currentIndex, memories, fetchVotes]);
+    }, [currentIndex, memories]);
 
     const handleVote = async (candidateName: string) => {
         if (!voterName) {
@@ -72,12 +90,15 @@ export default function RandomVoteModal({ onClose }: { onClose: () => void }) {
         }
         setIsVoting(true);
         setVotingCandidate(candidateName);
+        const memId = memories[currentIndex].id;
         try {
-            await axios.post(`/api/memories/${memories[currentIndex].id}/votes`, {
+            await axios.post(`/api/memories/${memId}/votes`, {
                 candidateName,
                 voterName,
             });
-            await fetchVotes(memories[currentIndex].id);
+            // Instantly fetch updated votes for immediate visual feedback
+            const res = await axios.get(`/api/memories/${memId}/votes`);
+            setVotes(res.data);
             toast.success(`Ditebak: ${candidateName}!`);
         } catch {
             toast.error("Gagal melakukan vote.");
