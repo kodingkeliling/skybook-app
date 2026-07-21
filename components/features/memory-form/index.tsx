@@ -14,18 +14,32 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
     const [isUploading, setIsUploading] = useState(false);
     const [caption, setCaption] = useState("");
     const [file, setFile] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleClearFile = (e?: React.MouseEvent) => {
+        if (e) e.stopPropagation();
+        setFile(null);
+        if (previewUrl) {
+            URL.revokeObjectURL(previewUrl);
+            setPreviewUrl(null);
+        }
+    };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
-            setFile(e.target.files[0]);
+            const selectedFile = e.target.files[0];
+            setFile(selectedFile);
+            setPreviewUrl(URL.createObjectURL(selectedFile));
         }
     };
 
     const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-            setFile(e.dataTransfer.files[0]);
+            const selectedFile = e.dataTransfer.files[0];
+            setFile(selectedFile);
+            setPreviewUrl(URL.createObjectURL(selectedFile));
         }
     };
 
@@ -53,7 +67,7 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
             toast.success("Memori berhasil disimpan!");
             setIsOpen(false);
             setCaption("");
-            setFile(null);
+            handleClearFile();
             if (onSuccess) onSuccess();
         } catch (error: any) {
             console.error("Upload Error:", error);
@@ -86,7 +100,7 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
                                 <h2 className="font-display text-headline-md text-primary">Upload Memory</h2>
                             </div>
                             <button
-                                onClick={() => setIsOpen(false)}
+                                onClick={() => { handleClearFile(); setIsOpen(false); }}
                                 className="text-outline hover:text-on-surface transition-colors p-1"
                             >
                                 <X size={24} />
@@ -102,20 +116,38 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
                                 <div
                                     onDragOver={(e) => e.preventDefault()}
                                     onDrop={handleDrop}
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="group relative border-2 border-dashed border-outline-variant hover:border-primary hover:bg-primary/5 rounded-xl transition-all duration-200 cursor-pointer p-10 flex flex-col items-center justify-center gap-4"
+                                    onClick={() => !previewUrl && fileInputRef.current?.click()}
+                                    className={`group relative border-2 border-dashed border-outline-variant hover:border-primary transition-all duration-200 rounded-xl overflow-hidden
+                                        ${previewUrl ? 'p-2 bg-surface-container/30' : 'hover:bg-primary/5 cursor-pointer p-10 flex flex-col items-center justify-center gap-4'}
+                                    `}
                                 >
-                                    <div className="w-16 h-16 bg-surface-container-low rounded-full flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                                        <UploadCloud size={32} />
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="font-body-lg text-on-surface font-semibold">
-                                            {file ? file.name : "Click to upload or drag and drop"}
-                                        </p>
-                                        <p className="font-body-md text-outline">
-                                            High-res PNG, JPG or HEIC (Max. 20MB)
-                                        </p>
-                                    </div>
+                                    {previewUrl ? (
+                                        <div className="relative w-full max-h-64 rounded-lg overflow-hidden flex items-center justify-center bg-surface-container-low">
+                                            <img src={previewUrl} className="max-h-64 object-contain" alt="Preview" />
+                                            <button
+                                                type="button"
+                                                onClick={handleClearFile}
+                                                className="absolute top-3 right-3 bg-red-500 hover:bg-red-650 text-white p-2 rounded-full transition-colors shadow-md z-15"
+                                                title="Hapus gambar"
+                                            >
+                                                <X size={18} />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="w-16 h-16 bg-surface-container-low rounded-full flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                                <UploadCloud size={32} />
+                                            </div>
+                                            <div className="text-center animate-in fade-in duration-200">
+                                                <p className="font-body-lg text-on-surface font-semibold">
+                                                    Click to upload or drag and drop
+                                                </p>
+                                                <p className="font-body-md text-outline">
+                                                    High-res PNG, JPG or HEIC (Max. 20MB)
+                                                </p>
+                                            </div>
+                                        </>
+                                    )}
                                     <input
                                         type="file"
                                         className="hidden"
@@ -145,7 +177,7 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
                             <div className="flex items-center justify-end gap-4 pt-4">
                                 <button
                                     type="button"
-                                    onClick={() => setIsOpen(false)}
+                                    onClick={() => { handleClearFile(); setIsOpen(false); }}
                                     className="px-6 py-3 rounded-xl font-label-sm text-primary hover:bg-primary/5 transition-all"
                                 >
                                     Cancel

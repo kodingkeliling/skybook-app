@@ -41,9 +41,9 @@ export default function RootLayout({
         {children}
 
         <Toaster
-          position="bottom-center"
+          position="top-center"
           toastOptions={{
-            className: "bg-surface-container-highest text-on-surface border-none rounded-xl font-body-md",
+            className: "bg-white text-on-surface border border-outline-variant/30 rounded-xl font-body-md shadow-lg",
           }}
         />
       </body>
