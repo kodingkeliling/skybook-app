@@ -122,7 +122,7 @@ export default function RandomVoteModal({ onClose }: { onClose: () => void }) {
 
     return (
         <div className="fixed inset-0 z-[70] bg-inverse-surface/50 backdrop-blur-strong flex flex-col md:items-center justify-end md:justify-center p-4">
-            <div className="relative w-full max-w-sm mx-auto animate-in zoom-in-95 duration-300">
+            <div className="relative w-full max-w-lg mx-auto animate-in zoom-in-95 duration-300">
                 {/* Close */}
                 <button
                     onClick={onClose}
@@ -145,13 +145,16 @@ export default function RandomVoteModal({ onClose }: { onClose: () => void }) {
                 </div>
 
                 {/* Card */}
-                <div className="bg-surface-container-lowest rounded-xl paper-shadow overflow-hidden max-h-[80vh] overflow-y-auto no-scrollbar">
-                    <img
-                        alt="Foto Voting"
-                        src={current.imageUrl}
-                        className="w-full object-cover aspect-[4/5]"
-                        referrerPolicy="no-referrer"
-                    />
+                <div className="bg-surface-container-lowest rounded-xl paper-shadow overflow-hidden max-h-[85vh] overflow-y-auto no-scrollbar">
+                    <div className="w-full bg-surface-container-low flex items-center justify-center border-b border-outline-variant/10 overflow-hidden">
+                        <img
+                            alt="Foto Voting"
+                            src={current.imageUrl}
+                            className="w-full h-auto max-h-[45vh] md:max-h-[50vh] object-contain"
+                            referrerPolicy="no-referrer"
+                        />
+                    </div>
+
 
                     <div className="p-5 space-y-4">
                         <p className="font-body-md text-on-surface-variant italic text-center text-sm md:text-base">"{current.caption}"</p>
