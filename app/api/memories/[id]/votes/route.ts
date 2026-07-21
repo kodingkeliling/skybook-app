@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-    const memoryId = params.id;
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const { id: memoryId } = await params;
     const votes = await prisma.vote.findMany({
         where: { memoryId }
     });
@@ -23,8 +23,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     return NextResponse.json(result);
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
-    const memoryId = params.id;
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const { id: memoryId } = await params;
     const { voterName, candidateName } = await req.json();
 
     const existing = await prisma.vote.findFirst({

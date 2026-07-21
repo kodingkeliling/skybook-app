@@ -3,8 +3,8 @@ import { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-    const memoryId = params.id;
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const { id: memoryId } = await params;
 
     const stream = new ReadableStream({
         async start(controller) {
