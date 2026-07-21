@@ -93,7 +93,7 @@ export default function Home() {
               onClick={handleSaveName}
               className="w-full bg-primary text-on-primary py-3 rounded-xl font-label-sm font-bold hover:opacity-90 active:scale-95 transition-all shadow-md"
             >
-              Mulai Voting
+              Mulai
             </button>
           </div>
         </div>
