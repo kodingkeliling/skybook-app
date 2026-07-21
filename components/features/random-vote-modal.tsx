@@ -28,6 +28,7 @@ export default function RandomVoteModal({ onClose }: { onClose: () => void }) {
     const [showDetails, setShowDetails] = useState(false);
     const [isVoting, setIsVoting] = useState(false);
     const [votingCandidate, setVotingCandidate] = useState<string | null>(null);
+    const [votesLoading, setVotesLoading] = useState(true);
 
     useEffect(() => {
         const fetchMemories = async () => {
@@ -46,11 +47,14 @@ export default function RandomVoteModal({ onClose }: { onClose: () => void }) {
     }, [onClose]);
 
     const fetchVotes = useCallback(async (memId: string) => {
+        setVotesLoading(true);
         try {
             const res = await axios.get(`/api/memories/${memId}/votes`);
             setVotes(res.data);
         } catch {
             // silent
+        } finally {
+            setVotesLoading(false);
         }
     }, []);
 
@@ -154,61 +158,82 @@ export default function RandomVoteModal({ onClose }: { onClose: () => void }) {
 
                         <div>
                             <p className="text-label-sm font-bold text-on-secondary-container uppercase mb-3">Pilih Kandidat:</p>
-                            <div className="grid grid-cols-2 gap-3">
-                                {CANDIDATES.map((candidate, i) => {
-                                    const isActive = hasVotedFor(candidate);
-                                    const count = getCandidateCount(candidate);
-                                    const isThisButtonLoading = votingCandidate === candidate;
+                            {votesLoading ? (
+                                <div className="grid grid-cols-2 gap-3">
+                                    {CANDIDATES.map((_, i) => (
+                                        <div
+                                            key={i}
+                                            className={`animate-pulse h-10 rounded-lg ${i === CANDIDATES.length - 1 && CANDIDATES.length % 2 !== 0 ? 'col-span-2' : ''
+                                                }`}
+                                            style={{ backgroundColor: "rgba(115, 118, 134, 0.15)" }}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-2 gap-3">
+                                    {CANDIDATES.map((candidate, i) => {
+                                        const isActive = hasVotedFor(candidate);
+                                        const count = getCandidateCount(candidate);
+                                        const isThisButtonLoading = votingCandidate === candidate;
 
-                                    return (
-                                        <button
-                                            key={candidate}
-                                            onClick={() => handleVote(candidate)}
-                                            disabled={isVoting}
-                                            className={`vote-btn relative border text-body-md py-2 px-3 rounded-lg transition-colors font-body-md flex items-center justify-center gap-2
-                                                ${i === CANDIDATES.length - 1 && CANDIDATES.length % 2 !== 0 ? 'col-span-2' : ''}
-                                                ${isActive
-                                                    ? 'bg-primary border-primary text-white active font-bold'
-                                                    : 'border-outline-variant hover:bg-primary/5 text-on-surface'
-                                                }
-                                                ${isVoting && !isThisButtonLoading ? 'opacity-50 cursor-not-allowed' : ''}
-                                            `}
-                                        >
-                                            {isThisButtonLoading && <Loader2 className="w-4 h-4 animate-spin shrink-0" />}
-                                            {candidate}
-                                            {!isThisButtonLoading && (
-                                                <span className={`vote-badge ${isActive ? 'bg-white text-primary' : ''}`}>{count}</span>
-                                            )}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <button
-                                className="flex items-center gap-1 text-primary text-label-sm font-bold hover:underline"
-                                onClick={() => setShowDetails(!showDetails)}
-                            >
-                                {showDetails ? <ChevronUp size={16} /> : <Users size={16} />}
-                                {showDetails ? "Sembunyikan detail" : "Lihat detail vote"}
-                            </button>
-                            {showDetails && (
-                                <div className="pt-2 border-t border-outline-variant/20 text-[11px] text-on-surface-variant max-h-32 overflow-y-auto no-scrollbar">
-                                    {votes.filter(v => v.count > 0).length > 0
-                                        ? votes.filter(v => v.count > 0).map(v => (
-                                            <div key={v.candidateName}>
-                                                <span className="font-semibold text-primary">{v.candidateName}:</span> {v.voters.join(', ')}
-                                            </div>
-                                        ))
-                                        : <span>Belum ada yang menebak.</span>
-                                    }
+                                        return (
+                                            <button
+                                                key={candidate}
+                                                onClick={() => handleVote(candidate)}
+                                                disabled={isVoting}
+                                                className={`vote-btn relative border text-body-md py-2 px-3 rounded-lg transition-colors font-body-md flex items-center justify-center gap-2
+                                                    ${i === CANDIDATES.length - 1 && CANDIDATES.length % 2 !== 0 ? 'col-span-2' : ''}
+                                                    ${isActive
+                                                        ? 'bg-primary border-primary text-white active font-bold'
+                                                        : 'border-outline-variant hover:bg-primary/5 text-on-surface'
+                                                    }
+                                                    ${isVoting && !isThisButtonLoading ? 'opacity-50 cursor-not-allowed' : ''}
+                                                `}
+                                            >
+                                                {isThisButtonLoading && <Loader2 className="w-4 h-4 animate-spin shrink-0" />}
+                                                {candidate}
+                                                {!isThisButtonLoading && (
+                                                    <span className={`vote-badge ${isActive ? 'bg-white text-primary' : ''}`}>{count}</span>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
 
+                        {votesLoading ? (
+                            <div className="space-y-2 pt-2">
+                                <div className="animate-pulse h-4 w-32 rounded" style={{ backgroundColor: "rgba(115, 118, 134, 0.15)" }} />
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                <button
+                                    className="flex items-center gap-1 text-primary text-label-sm font-bold hover:underline"
+                                    onClick={() => setShowDetails(!showDetails)}
+                                >
+                                    {showDetails ? <ChevronUp size={16} /> : <Users size={16} />}
+                                    {showDetails ? "Sembunyikan detail" : "Lihat detail vote"}
+                                </button>
+                                {showDetails && (
+                                    <div className="pt-2 border-t border-outline-variant/20 text-[11px] text-on-surface-variant max-h-32 overflow-y-auto no-scrollbar">
+                                        {votes.filter(v => v.count > 0).length > 0
+                                            ? votes.filter(v => v.count > 0).map(v => (
+                                                <div key={v.candidateName}>
+                                                    <span className="font-semibold text-primary">{v.candidateName}:</span> {v.voters.join(', ')}
+                                                </div>
+                                            ))
+                                            : <span>Belum ada yang menebak.</span>
+                                        }
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         <div className="pt-2">
-                            {hasAnyVoteFromMe ? (
+                            {votesLoading ? (
+                                <div className="animate-pulse h-10 w-full rounded-xl" style={{ backgroundColor: "rgba(115, 118, 134, 0.15)" }} />
+                            ) : hasAnyVoteFromMe ? (
                                 <button
                                     onClick={handleNext}
                                     className="w-full flex items-center justify-center gap-2 py-3 bg-primary text-on-primary rounded-xl font-bold hover:bg-primary/95 transition-all shadow-md active:scale-[0.98]"
