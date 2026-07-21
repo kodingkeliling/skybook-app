@@ -1,9 +1,7 @@
-"use client";
-
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useVoterStore } from "@/stores/use-voter-store";
-import { Users, X, ChevronUp, ChevronRight } from "lucide-react";
+import { Users, X, ChevronUp, ChevronRight, Loader2, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
 interface Memory {
@@ -29,6 +27,7 @@ export default function RandomVoteModal({ onClose }: { onClose: () => void }) {
     const [votes, setVotes] = useState<VoteGroup[]>([]);
     const [showDetails, setShowDetails] = useState(false);
     const [isVoting, setIsVoting] = useState(false);
+    const [votingCandidate, setVotingCandidate] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchMemories = async () => {
@@ -68,6 +67,7 @@ export default function RandomVoteModal({ onClose }: { onClose: () => void }) {
             return;
         }
         setIsVoting(true);
+        setVotingCandidate(candidateName);
         try {
             await axios.post(`/api/memories/${memories[currentIndex].id}/votes`, {
                 candidateName,
@@ -75,19 +75,11 @@ export default function RandomVoteModal({ onClose }: { onClose: () => void }) {
             });
             await fetchVotes(memories[currentIndex].id);
             toast.success(`Ditebak: ${candidateName}!`);
-            // Auto-advance to next after 700ms
-            setTimeout(() => {
-                if (currentIndex < memories.length - 1) {
-                    setCurrentIndex(prev => prev + 1);
-                } else {
-                    toast.success("Semua foto sudah ditebak!");
-                    onClose();
-                }
-            }, 700);
         } catch {
             toast.error("Gagal melakukan vote.");
         } finally {
             setIsVoting(false);
+            setVotingCandidate(null);
         }
     };
 
@@ -96,6 +88,8 @@ export default function RandomVoteModal({ onClose }: { onClose: () => void }) {
 
     const hasVotedFor = (name: string) =>
         votes.find(v => v.candidateName === name)?.voters.includes(voterName || "") ?? false;
+
+    const hasAnyVoteFromMe = votes.some(v => v.voters.includes(voterName || ""));
 
     if (loading) {
         return (
@@ -111,6 +105,16 @@ export default function RandomVoteModal({ onClose }: { onClose: () => void }) {
     if (memories.length === 0) return null;
 
     const current = memories[currentIndex];
+
+    // Next page handler
+    const handleNext = () => {
+        if (currentIndex < memories.length - 1) {
+            setCurrentIndex(prev => prev + 1);
+        } else {
+            toast.success("Semua foto sudah ditampilkan!");
+            onClose();
+        }
+    };
 
     return (
         <div className="fixed inset-0 z-[70] bg-inverse-surface/50 backdrop-blur-strong flex flex-col md:items-center justify-end md:justify-center p-4">
@@ -146,7 +150,7 @@ export default function RandomVoteModal({ onClose }: { onClose: () => void }) {
                     />
 
                     <div className="p-5 space-y-4">
-                        <p className="font-body-md text-on-surface-variant italic text-center">"{current.caption}"</p>
+                        <p className="font-body-md text-on-surface-variant italic text-center text-sm md:text-base">"{current.caption}"</p>
 
                         <div>
                             <p className="text-label-sm font-bold text-on-secondary-container uppercase mb-3">Pilih Kandidat:</p>
@@ -154,21 +158,27 @@ export default function RandomVoteModal({ onClose }: { onClose: () => void }) {
                                 {CANDIDATES.map((candidate, i) => {
                                     const isActive = hasVotedFor(candidate);
                                     const count = getCandidateCount(candidate);
+                                    const isThisButtonLoading = votingCandidate === candidate;
+
                                     return (
                                         <button
                                             key={candidate}
                                             onClick={() => handleVote(candidate)}
                                             disabled={isVoting}
-                                            className={`vote-btn relative border text-body-md py-2 px-3 rounded-lg transition-colors font-body-md
+                                            className={`vote-btn relative border text-body-md py-2 px-3 rounded-lg transition-colors font-body-md flex items-center justify-center gap-2
                                                 ${i === CANDIDATES.length - 1 && CANDIDATES.length % 2 !== 0 ? 'col-span-2' : ''}
                                                 ${isActive
-                                                    ? 'bg-primary border-primary text-white active'
+                                                    ? 'bg-primary border-primary text-white active font-bold'
                                                     : 'border-outline-variant hover:bg-primary/5 text-on-surface'
                                                 }
+                                                ${isVoting && !isThisButtonLoading ? 'opacity-50 cursor-not-allowed' : ''}
                                             `}
                                         >
+                                            {isThisButtonLoading && <Loader2 className="w-4 h-4 animate-spin shrink-0" />}
                                             {candidate}
-                                            <span className={`vote-badge ${isActive ? 'bg-white text-primary' : ''}`}>{count}</span>
+                                            {!isThisButtonLoading && (
+                                                <span className={`vote-badge ${isActive ? 'bg-white text-primary' : ''}`}>{count}</span>
+                                            )}
                                         </button>
                                     );
                                 })}
@@ -184,7 +194,7 @@ export default function RandomVoteModal({ onClose }: { onClose: () => void }) {
                                 {showDetails ? "Sembunyikan detail" : "Lihat detail vote"}
                             </button>
                             {showDetails && (
-                                <div className="pt-2 border-t border-outline-variant/20 text-[11px] text-on-surface-variant">
+                                <div className="pt-2 border-t border-outline-variant/20 text-[11px] text-on-surface-variant max-h-32 overflow-y-auto no-scrollbar">
                                     {votes.filter(v => v.count > 0).length > 0
                                         ? votes.filter(v => v.count > 0).map(v => (
                                             <div key={v.candidateName}>
@@ -197,19 +207,24 @@ export default function RandomVoteModal({ onClose }: { onClose: () => void }) {
                             )}
                         </div>
 
-                        <button
-                            onClick={() => {
-                                if (currentIndex < memories.length - 1) {
-                                    setCurrentIndex(prev => prev + 1);
-                                } else {
-                                    toast.info("Semua foto sudah ditampilkan!");
-                                    onClose();
-                                }
-                            }}
-                            className="w-full flex items-center justify-center gap-2 py-2 text-outline text-label-sm hover:text-primary transition-colors"
-                        >
-                            Lewati <ChevronRight size={16} />
-                        </button>
+                        <div className="pt-2">
+                            {hasAnyVoteFromMe ? (
+                                <button
+                                    onClick={handleNext}
+                                    className="w-full flex items-center justify-center gap-2 py-3 bg-primary text-on-primary rounded-xl font-bold hover:bg-primary/95 transition-all shadow-md active:scale-[0.98]"
+                                >
+                                    <span>Lanjut ke Foto Berikutnya</span>
+                                    <ArrowRight size={18} />
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={handleNext}
+                                    className="w-full flex items-center justify-center gap-2 py-2 text-outline text-label-sm hover:text-primary transition-colors"
+                                >
+                                    Lewati <ChevronRight size={16} />
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
