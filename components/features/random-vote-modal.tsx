@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useVoterStore } from "@/stores/use-voter-store";
-import { Users, X, ChevronUp, ChevronRight, Loader2, ArrowRight } from "lucide-react";
+import { Users, X, ChevronUp, ChevronRight, ChevronLeft, Loader2, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
 interface Memory {
@@ -131,7 +131,12 @@ export default function RandomVoteModal({ onClose }: { onClose: () => void }) {
 
     const current = memories[currentIndex];
 
-    // Next page handler
+    const handlePrevious = () => {
+        if (currentIndex > 0) {
+            setCurrentIndex(prev => prev - 1);
+        }
+    };
+
     const handleNext = () => {
         if (currentIndex < memories.length - 1) {
             setCurrentIndex(prev => prev + 1);
@@ -254,7 +259,17 @@ export default function RandomVoteModal({ onClose }: { onClose: () => void }) {
                             </div>
                         )}
 
-                        <div className="pt-2">
+                        <div className="pt-2 space-y-2">
+                            {currentIndex > 0 && (
+                                <button
+                                    onClick={handlePrevious}
+                                    disabled={votesLoading}
+                                    className="w-full flex items-center justify-center gap-2 py-2 text-outline text-label-sm hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <ChevronLeft size={16} />
+                                    <span>Kembali ke Foto Sebelumnya</span>
+                                </button>
+                            )}
                             {votesLoading ? (
                                 <div className="animate-pulse h-10 w-full rounded-xl" style={{ backgroundColor: "rgba(115, 118, 134, 0.15)" }} />
                             ) : hasAnyVoteFromMe ? (
