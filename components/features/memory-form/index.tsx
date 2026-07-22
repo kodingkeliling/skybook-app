@@ -187,7 +187,7 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
                                     disabled={isUploading}
                                     className={`bg-primary text-on-primary px-8 py-3 rounded-xl font-label-sm font-bold transition-all shadow-md ${isUploading ? 'opacity-50' : 'hover:opacity-90 active:scale-95'}`}
                                 >
-                                    {isUploading ? "Menyimpan..." : "Simpan Memory"}
+                                    {isUploading ? "Menyimpan..." : "Simpan"}
                                 </button>
                             </div>
                         </form>
