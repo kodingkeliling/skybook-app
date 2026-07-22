@@ -99,7 +99,7 @@ export default function RandomVoteModal({ onClose }: { onClose: () => void }) {
             // Instantly fetch updated votes for immediate visual feedback
             const res = await axios.get(`/api/memories/${memId}/votes`);
             setVotes(res.data);
-            toast.success(`Ditebak: ${candidateName}!`);
+            toast.success(`Berhasil voting: ${candidateName}!`);
         } catch {
             toast.error("Gagal melakukan vote.");
         } finally {
