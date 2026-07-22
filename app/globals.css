@@ -189,3 +189,41 @@ select:focus {
 .max-w-container-max-width {
     max-width: 1280px;
 }
+
+/* Custom Sonner Toast Style Overrides: neutral text, colored icons */
+li[data-sonner-toast] {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #191c1e !important;
+}
+
+li[data-sonner-toast] [data-content] {
+    color: #191c1e !important;
+}
+
+/* Success status */
+li[data-sonner-toast][data-type="success"] [data-icon] {
+    color: #16a34a !important;
+}
+
+li[data-sonner-toast][data-type="success"] [data-icon] svg {
+    color: #16a34a !important;
+}
+
+/* Error status */
+li[data-sonner-toast][data-type="error"] [data-icon] {
+    color: #ef4444 !important;
+}
+
+li[data-sonner-toast][data-type="error"] [data-icon] svg {
+    color: #ef4444 !important;
+}
+
+/* Warning status */
+li[data-sonner-toast][data-type="warning"] [data-icon] {
+    color: #f59e0b !important;
+}
+
+li[data-sonner-toast][data-type="warning"] [data-icon] svg {
+    color: #f59e0b !important;
+}

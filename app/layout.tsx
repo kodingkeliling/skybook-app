@@ -42,8 +42,19 @@ export default function RootLayout({
 
         <Toaster
           position="top-center"
+          theme="light"
           toastOptions={{
-            className: "bg-white text-on-surface border border-outline-variant/30 rounded-xl font-body-md shadow-lg",
+            style: {
+              background: '#ffffff',
+              backgroundColor: '#ffffff',
+              opacity: 1,
+            },
+            classNames: {
+              toast: "bg-white text-on-surface border border-outline-variant/30 rounded-xl font-body-md shadow-lg opacity-100",
+              success: "!bg-white !border-green-200",
+              error: "!bg-white !border-red-200",
+              warning: "!bg-white !border-amber-200",
+            }
           }}
         />
       </body>
