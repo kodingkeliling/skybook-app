@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import MemoryCard from "@/components/features/memory-card";
-import { Loader2 } from "lucide-react";
 
 interface Memory {
     id: string;
@@ -37,9 +36,19 @@ export default function MemoryList({ refreshKey }: MemoryListProps) {
 
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center py-20">
-                <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
-                <p className="text-on-surface-variant font-body-md animate-pulse">Memuat foto...</p>
+            <div className="masonry-grid">
+                {[...Array(6)].map((_, i) => (
+                    <div
+                        key={i}
+                        className="memory-card bg-surface-container-lowest p-3 rounded-xl paper-shadow border border-outline-variant/20 animate-pulse"
+                    >
+                        <div className="bg-surface-container-high rounded-lg mb-4 w-full" style={{ height: i % 2 === 0 ? "280px" : "200px" }} />
+                        <div className="px-2 pb-2">
+                            <div className="h-4 bg-surface-container-high rounded w-3/4 mb-2" />
+                            <div className="h-4 bg-surface-container-high rounded w-1/2" />
+                        </div>
+                    </div>
+                ))}
             </div>
         );
     }

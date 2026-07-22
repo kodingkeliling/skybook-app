@@ -1,6 +1,4 @@
 import React from "react";
-import { formatDistanceToNow } from "date-fns";
-import { id } from "date-fns/locale/id";
 
 interface MemoryCardProps {
     memory: {
@@ -10,6 +8,27 @@ interface MemoryCardProps {
         createdAt: Date | string;
     };
 }
+
+const parseMarkdown = (text: string) => {
+    return text.split('\n').map((line, lineIndex) => {
+        const parts = line.split(/(\*\*.*?\*\*|\*.*?\*)/g);
+        const lineContent = parts.map((part, partIndex) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={partIndex}>{part.slice(2, -2)}</strong>;
+            } else if (part.startsWith('*') && part.endsWith('*')) {
+                return <em key={partIndex}>{part.slice(1, -1)}</em>;
+            }
+            return part;
+        });
+
+        return (
+            <React.Fragment key={lineIndex}>
+                {lineIndex > 0 && <br />}
+                {lineContent}
+            </React.Fragment>
+        );
+    });
+};
 
 export default function MemoryCard({ memory }: MemoryCardProps) {
     return (
@@ -26,10 +45,9 @@ export default function MemoryCard({ memory }: MemoryCardProps) {
                 />
             </div>
             <div className="px-2 pb-2">
-                <p className="font-caption text-primary text-label-sm mb-1 uppercase tracking-wider">
-                    {formatDistanceToNow(new Date(memory.createdAt), { addSuffix: true, locale: id })}
+                <p className="font-body-md text-on-surface-variant italic">
+                    {parseMarkdown(memory.caption)}
                 </p>
-                <p className="font-body-md text-on-surface-variant italic">"{memory.caption}"</p>
             </div>
         </div>
     );
