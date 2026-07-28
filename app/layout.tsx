@@ -16,7 +16,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Skybook - Tebak Foto Masa Kecil",
+  title: "Skybook - Kenangan Kita",
   description: "Setiap gambar ada cerita. Setiap cerita belum tentu ada gambar. Tunjukan cerita kalian ke se-isi kantor Skyshi",
   icons: {
     icon: "https://lh3.googleusercontent.com/aida-public/AB6AXuA6WHca2xBvrLFfzPVz7j1xzPdu9IL2Kdb9sMyZgGbDud6M-hAAY62zasamdrdZ1rGwnkSozAmdsiaHwu-HMl52ruoSf4bQvwge8_LFWITHzmRC5gUH5eOdV3MBIQ5RsW-0BOfDMFT0WR6WmocJfrLjkNNxMMXWvnP2XQTGSXOinybCbtaa4qxQYxcMMzPpE_MTRCH5KjBrLCb4RdGERtFQiH63NzNEjJDcqzlCKk_ZQmU_yp3hM2FbO4FdY4tMWnz9yq1Txy_2T2Y",
