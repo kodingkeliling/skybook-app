@@ -1,5 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import MemoryCaption from "@/components/features/memory-caption";
+import MemoryComments, { type MemoryComment } from "@/components/features/memory-comments";
 import { useVoterStore } from "@/stores/use-voter-store";
 import { ArrowRight, ChevronLeft, ChevronRight, ChevronUp, FileText, Loader2, Users, X } from "lucide-react";
 import { toast } from "sonner";
@@ -9,6 +11,7 @@ interface Memory {
     caption: string;
     imageUrl: string | null;
     createdAt: string;
+    comments?: MemoryComment[];
 }
 
 interface VoteGroup {
@@ -24,9 +27,19 @@ interface RandomVoteModalProps {
     onClose: () => void;
 }
 
+function shuffleMemories(items: Memory[]) {
+    const shuffled = [...items];
+    for (let i = shuffled.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
 export default function RandomVoteModal({ mode, onClose }: RandomVoteModalProps) {
     const { voterName } = useVoterStore();
-    const [allMemories, setAllMemories] = useState<Memory[]>([]);
+    const onCloseRef = useRef(onClose);
+    const [memories, setMemories] = useState<Memory[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [loading, setLoading] = useState(true);
     const [votes, setVotes] = useState<VoteGroup[]>([]);
@@ -36,56 +49,67 @@ export default function RandomVoteModal({ mode, onClose }: RandomVoteModalProps)
     const [votesLoading, setVotesLoading] = useState(true);
 
     useEffect(() => {
+        onCloseRef.current = onClose;
+    }, [onClose]);
+
+    useEffect(() => {
+        let cancelled = false;
+
         const fetchMemories = async () => {
+            setLoading(true);
+            setCurrentIndex(0);
+            setVotes([]);
+            setShowDetails(false);
+            setVotesLoading(mode === "voting");
+
             try {
                 const res = await axios.get("/api/memories");
-                const shuffled = [...res.data].sort(() => 0.5 - Math.random());
-                setAllMemories(shuffled);
+                const filtered = (res.data as Memory[]).filter((memory) => {
+                    if (mode === "voting") {
+                        return Boolean(memory.imageUrl);
+                    }
+                    return !memory.imageUrl;
+                });
+
+                if (cancelled) return;
+                setMemories(shuffleMemories(filtered));
             } catch {
+                if (cancelled) return;
                 toast.error(mode === "voting" ? "Gagal mengambil data foto." : "Gagal mengambil data cerita.");
-                onClose();
+                onCloseRef.current();
             } finally {
-                setLoading(false);
+                if (!cancelled) {
+                    setLoading(false);
+                }
             }
         };
-        fetchMemories();
-    }, [mode, onClose]);
 
-    const memories = useMemo(() => {
-        return allMemories.filter((memory) => {
-            if (mode === "voting") {
-                return Boolean(memory.imageUrl);
-            }
+        void fetchMemories();
 
-            return !memory.imageUrl;
-        });
-    }, [allMemories, mode]);
-
-    useEffect(() => {
-        setCurrentIndex(0);
+        return () => {
+            cancelled = true;
+        };
     }, [mode]);
 
+    const currentMemoryId = memories[currentIndex]?.id;
+
     useEffect(() => {
-        if (mode !== "voting") {
+        if (mode !== "voting" || !currentMemoryId) {
             setVotes([]);
             setVotesLoading(false);
             return;
         }
 
-        if (!memories.length) {
-            return;
-        }
-
+        let cancelled = false;
         setShowDetails(false);
-        const memId = memories[currentIndex].id;
         setVotesLoading(true);
 
-        const eventSource = new EventSource(`/api/memories/${memId}/votes/stream`);
+        const eventSource = new EventSource(`/api/memories/${currentMemoryId}/votes/stream`);
 
         eventSource.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
-                if (Array.isArray(data)) {
+                if (!cancelled && Array.isArray(data)) {
                     setVotes(data);
                     setVotesLoading(false);
                 }
@@ -94,23 +118,30 @@ export default function RandomVoteModal({ mode, onClose }: RandomVoteModalProps)
             }
         };
 
-        eventSource.onerror = (err) => {
-            console.error("SSE stream fail. Falling back to REST fetch:", err);
-            axios.get(`/api/memories/${memId}/votes`)
+        eventSource.onerror = () => {
+            eventSource.close();
+            axios.get(`/api/memories/${currentMemoryId}/votes`)
                 .then((res) => {
-                    setVotes(res.data);
-                    setVotesLoading(false);
+                    if (!cancelled) {
+                        setVotes(res.data);
+                        setVotesLoading(false);
+                    }
                 })
-                .catch(() => { });
+                .catch(() => {
+                    if (!cancelled) {
+                        setVotesLoading(false);
+                    }
+                });
         };
 
         return () => {
+            cancelled = true;
             eventSource.close();
         };
-    }, [currentIndex, memories, mode]);
+    }, [currentMemoryId, mode]);
 
     const handleVote = async (candidateName: string) => {
-        if (mode !== "voting") {
+        if (mode !== "voting" || !currentMemoryId) {
             return;
         }
 
@@ -120,14 +151,12 @@ export default function RandomVoteModal({ mode, onClose }: RandomVoteModalProps)
         }
         setIsVoting(true);
         setVotingCandidate(candidateName);
-        const memId = memories[currentIndex].id;
         try {
-            await axios.post(`/api/memories/${memId}/votes`, {
+            await axios.post(`/api/memories/${currentMemoryId}/votes`, {
                 candidateName,
                 voterName,
             });
-            // Instantly fetch updated votes for immediate visual feedback
-            const res = await axios.get(`/api/memories/${memId}/votes`);
+            const res = await axios.get(`/api/memories/${currentMemoryId}/votes`);
             setVotes(res.data);
             toast.success(`Berhasil voting: ${candidateName}!`);
         } catch {
@@ -147,13 +176,68 @@ export default function RandomVoteModal({ mode, onClose }: RandomVoteModalProps)
     const hasAnyVoteFromMe = votes.some(v => v.voters.includes(voterName || ""));
 
     if (loading) {
+        const isVotingMode = mode === "voting";
+
         return (
-            <div className="fixed inset-0 z-[70] bg-inverse-surface/50 backdrop-blur-strong flex items-center justify-center">
-                <div className="text-white text-center">
-                    <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-3" />
-                    <p className="font-body-md">
-                        {mode === "voting" ? "Memuat foto..." : "Memuat cerita..."}
-                    </p>
+            <div className="fixed inset-0 z-[70] bg-inverse-surface/50 backdrop-blur-strong flex flex-col md:items-center justify-end md:justify-center p-4">
+                <div className="relative w-full max-w-lg mx-auto animate-in zoom-in-95 duration-300">
+                    <button
+                        onClick={onClose}
+                        className="absolute -top-12 right-0 w-10 h-10 flex items-center justify-center bg-white/20 text-white rounded-full hover:bg-white/30 transition-colors"
+                    >
+                        <X size={20} />
+                    </button>
+
+                    <div className="mb-2 flex items-center gap-2">
+                        <div className="flex-1 h-1 rounded-full bg-white/20 overflow-hidden">
+                            <div className="h-full w-1/4 animate-pulse rounded-full bg-white/60" />
+                        </div>
+                        <div className="h-3 w-10 animate-pulse rounded bg-white/30" />
+                    </div>
+
+                    <div className="bg-surface-container-lowest rounded-xl paper-shadow overflow-hidden max-h-[85vh] overflow-y-auto no-scrollbar">
+                        <div className="p-5 space-y-4">
+                            <div className="text-center space-y-3">
+                                <div className="mx-auto h-12 w-12 animate-pulse rounded-full bg-surface-container-high" />
+                                <div className="mx-auto h-5 w-40 animate-pulse rounded bg-surface-container-high" />
+                                <div className="mx-auto h-4 w-64 max-w-full animate-pulse rounded bg-surface-container-high" />
+                            </div>
+
+                            {isVotingMode && (
+                                <div
+                                    className="w-full animate-pulse rounded-xl bg-surface-container-high"
+                                    style={{ height: "40vh" }}
+                                />
+                            )}
+
+                            <div className="rounded-2xl bg-surface-container-low p-5 space-y-3">
+                                <div className="h-4 w-full animate-pulse rounded bg-surface-container-high" />
+                                <div className="h-4 w-5/6 animate-pulse rounded bg-surface-container-high" />
+                                <div className="h-4 w-2/3 animate-pulse rounded bg-surface-container-high" />
+                            </div>
+
+                            {isVotingMode ? (
+                                <div className="grid grid-cols-2 gap-3">
+                                    {Array.from({ length: 5 }).map((_, index) => (
+                                        <div
+                                            key={index}
+                                            className={`h-10 animate-pulse rounded-lg bg-surface-container-high ${index === 4 ? "col-span-2" : ""}`}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="rounded-xl bg-surface-container-low p-4 space-y-3">
+                                    <div className="h-4 w-28 animate-pulse rounded bg-surface-container-high" />
+                                    <div className="h-20 w-full animate-pulse rounded-xl bg-surface-container-high" />
+                                    <div className="flex justify-end">
+                                        <div className="h-10 w-24 animate-pulse rounded-xl bg-surface-container-high" />
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="h-10 w-full animate-pulse rounded-xl bg-surface-container-high" />
+                        </div>
+                    </div>
                 </div>
             </div>
         );
@@ -242,6 +326,7 @@ export default function RandomVoteModal({ mode, onClose }: RandomVoteModalProps)
                         {isVotingMode && current.imageUrl && (
                             <div className="w-full bg-surface-container-low flex items-center justify-center border border-outline-variant/10 overflow-hidden rounded-xl">
                                 <img
+                                    key={current.id}
                                     alt="Foto Voting"
                                     src={current.imageUrl}
                                     className="w-full h-auto max-h-[45vh] md:max-h-[50vh] object-contain"
@@ -251,10 +336,21 @@ export default function RandomVoteModal({ mode, onClose }: RandomVoteModalProps)
                         )}
 
                         <div className="rounded-2xl bg-surface-container-low p-5">
-                            <p className="font-body-md text-on-surface-variant italic text-center text-sm md:text-base">
-                                {current.caption}
-                            </p>
+                            <MemoryCaption
+                                text={current.caption}
+                                className="font-body-md text-on-surface-variant italic text-start text-sm md:text-base"
+                            />
                         </div>
+
+                        {!isVotingMode && (
+                            <MemoryComments
+                                key={current.id}
+                                memoryId={current.id}
+                                initialComments={current.comments ?? []}
+                                defaultOpen
+                                placeholder="Tulis tanggapan untuk keluh kesah ini..."
+                            />
+                        )}
 
                         {isVotingMode && (
                             <>

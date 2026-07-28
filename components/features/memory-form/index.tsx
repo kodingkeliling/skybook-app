@@ -1,21 +1,26 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useRef, useState } from "react";
 import { toast } from "sonner";
-import { UploadCloud, X } from "lucide-react";
+import { FileText, Images, UploadCloud, X } from "lucide-react";
 import axios from "axios";
 
 interface MemoryFormProps {
     onSuccess?: () => void;
 }
 
+type FormTab = "tebak-gambar" | "sambat-sehat";
+
 export default function MemoryForm({ onSuccess }: MemoryFormProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<FormTab>("tebak-gambar");
     const [isUploading, setIsUploading] = useState(false);
     const [caption, setCaption] = useState("");
     const [file, setFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const isGuessImageTab = activeTab === "tebak-gambar";
 
     const handleClearFile = (e?: React.MouseEvent) => {
         if (e) e.stopPropagation();
@@ -23,6 +28,23 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
         if (previewUrl) {
             URL.revokeObjectURL(previewUrl);
             setPreviewUrl(null);
+        }
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+    };
+
+    const handleClose = () => {
+        handleClearFile();
+        setCaption("");
+        setActiveTab("tebak-gambar");
+        setIsOpen(false);
+    };
+
+    const handleTabChange = (tab: FormTab) => {
+        setActiveTab(tab);
+        if (tab === "sambat-sehat") {
+            handleClearFile();
         }
     };
 
@@ -45,8 +67,14 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
         if (caption.trim() === "") {
-            toast.error("Cerita tidak boleh kosong.");
+            toast.error(isGuessImageTab ? "Caption tidak boleh kosong." : "Cerita tidak boleh kosong.");
+            return;
+        }
+
+        if (isGuessImageTab && !file) {
+            toast.error("Untuk Tebak Gambar, foto wajib diupload.");
             return;
         }
 
@@ -57,20 +85,22 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
             const formData = new FormData();
             formData.append("caption", caption.trim());
 
-            if (file) {
+            if (isGuessImageTab && file) {
                 formData.append("file", file);
             }
 
             await axios.post("/api/memories", formData, {
                 headers: {
-                    "Content-Type": "multipart/form-data"
-                }
+                    "Content-Type": "multipart/form-data",
+                },
             });
 
-            toast.success("Memori berhasil disimpan!");
-            setIsOpen(false);
-            setCaption("");
-            handleClearFile();
+            toast.success(
+                isGuessImageTab
+                    ? "Foto tebak gambar berhasil disimpan!"
+                    : "Sambat sehat berhasil disimpan!"
+            );
+            handleClose();
             if (onSuccess) onSuccess();
         } catch (error) {
             console.error("Upload Error:", error);
@@ -93,8 +123,7 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
 
             {isOpen && (
                 <div className="fixed inset-0 z-[60] bg-inverse-surface/40 backdrop-blur-strong flex items-center justify-center p-4">
-                    <div className="bg-surface-container-lowest w-full max-w-2xl rounded-xl scrapbook-shadow flex flex-col animate-in fade-in zoom-in duration-300">
-                        {/* Header */}
+                    <div className="bg-surface-container-lowest w-full max-w-2xl rounded-xl scrapbook-shadow flex flex-col animate-in fade-in zoom-in duration-300 max-h-[90vh] overflow-y-auto">
                         <div className="px-8 py-6 flex justify-between items-center border-b border-surface-container-high">
                             <div className="flex items-center gap-3">
                                 <div className="bg-primary/10 p-2 rounded-lg text-primary">
@@ -103,67 +132,97 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
                                 <h2 className="font-display text-headline-md text-primary">Buat Memory</h2>
                             </div>
                             <button
-                                onClick={() => { handleClearFile(); setIsOpen(false); }}
+                                onClick={handleClose}
                                 className="text-outline hover:text-on-surface transition-colors p-1"
                             >
                                 <X size={24} />
                             </button>
                         </div>
 
-                        {/* Form Body */}
                         <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                            <div className="space-y-2">
-                                <label className="font-label-sm text-on-secondary-container block">
-                                    Upload Gambar Opsional
-                                </label>
-                                <div
-                                    onDragOver={(e) => e.preventDefault()}
-                                    onDrop={handleDrop}
-                                    onClick={() => !previewUrl && fileInputRef.current?.click()}
-                                    className={`group relative border-2 border-dashed border-outline-variant hover:border-primary transition-all duration-200 rounded-xl overflow-hidden
-                                        ${previewUrl ? 'p-2 bg-surface-container/30' : 'hover:bg-primary/5 cursor-pointer p-10 flex flex-col items-center justify-center gap-4'}
-                                    `}
+                            <div className="grid grid-cols-2 gap-2 rounded-xl bg-surface-container-low p-1">
+                                <button
+                                    type="button"
+                                    onClick={() => handleTabChange("tebak-gambar")}
+                                    className={`flex items-center justify-center gap-2 rounded-lg px-4 py-3 font-label-sm font-bold transition-all ${
+                                        isGuessImageTab
+                                            ? "bg-surface-container-lowest text-primary shadow-sm"
+                                            : "text-on-surface-variant hover:text-primary"
+                                    }`}
                                 >
-                                    {previewUrl ? (
-                                        <div className="relative w-full max-h-64 rounded-lg overflow-hidden flex items-center justify-center bg-surface-container-low">
-                                            <img src={previewUrl} className="max-h-64 object-contain" alt="Preview" />
-                                            <button
-                                                type="button"
-                                                onClick={handleClearFile}
-                                                className="absolute top-3 right-3 bg-red-500 hover:bg-red-650 text-white p-2 rounded-full transition-colors shadow-md z-15"
-                                                title="Hapus gambar"
-                                            >
-                                                <X size={18} />
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <div className="w-16 h-16 bg-surface-container-low rounded-full flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                                                <UploadCloud size={32} />
-                                            </div>
-                                            <div className="text-center animate-in fade-in duration-200">
-                                                <p className="font-body-lg text-on-surface font-semibold">
-                                                    Tambahkan foto kalau ada
-                                                </p>
-                                                <p className="font-body-md text-outline">
-                                                    Bisa dikosongkan kalau mau post cerita saja
-                                                </p>
-                                            </div>
-                                        </>
-                                    )}
-                                    <input
-                                        type="file"
-                                        className="hidden"
-                                        ref={fileInputRef}
-                                        accept="image/*"
-                                        onChange={handleFileChange}
-                                    />
-                                </div>
+                                    <Images size={16} />
+                                    Tebak Gambar
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleTabChange("sambat-sehat")}
+                                    className={`flex items-center justify-center gap-2 rounded-lg px-4 py-3 font-label-sm font-bold transition-all ${
+                                        !isGuessImageTab
+                                            ? "bg-surface-container-lowest text-primary shadow-sm"
+                                            : "text-on-surface-variant hover:text-primary"
+                                    }`}
+                                >
+                                    <FileText size={16} />
+                                    Sambat Sehat
+                                </button>
                             </div>
+
+                            {isGuessImageTab ? (
+                                <div className="space-y-2">
+                                    <label className="font-label-sm text-on-secondary-container block">
+                                        Upload Gambar
+                                    </label>
+                                    <div
+                                        onDragOver={(e) => e.preventDefault()}
+                                        onDrop={handleDrop}
+                                        onClick={() => !previewUrl && fileInputRef.current?.click()}
+                                        className={`group relative border-2 border-dashed border-outline-variant hover:border-primary transition-all duration-200 rounded-xl overflow-hidden
+                                            ${previewUrl ? "p-2 bg-surface-container/30" : "hover:bg-primary/5 cursor-pointer p-10 flex flex-col items-center justify-center gap-4"}
+                                        `}
+                                    >
+                                        {previewUrl ? (
+                                            <div className="relative w-full max-h-64 rounded-lg overflow-hidden flex items-center justify-center bg-surface-container-low">
+                                                <img src={previewUrl} className="max-h-64 object-contain" alt="Preview" />
+                                                <button
+                                                    type="button"
+                                                    onClick={handleClearFile}
+                                                    className="absolute top-3 right-3 bg-red-500 hover:bg-red-650 text-white p-2 rounded-full transition-colors shadow-md z-15"
+                                                    title="Hapus gambar"
+                                                >
+                                                    <X size={18} />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <div className="w-16 h-16 bg-surface-container-low rounded-full flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                                    <UploadCloud size={32} />
+                                                </div>
+                                                <div className="text-center animate-in fade-in duration-200">
+                                                    <p className="font-body-lg text-on-surface font-semibold">
+                                                        Upload foto untuk ditebak
+                                                    </p>
+                                                    <p className="font-body-md text-outline">
+                                                        PNG, JPG atau HEIC
+                                                    </p>
+                                                </div>
+                                            </>
+                                        )}
+                                        <input
+                                            type="file"
+                                            className="hidden"
+                                            ref={fileInputRef}
+                                            accept="image/*"
+                                            onChange={handleFileChange}
+                                        />
+                                    </div>
+                                </div>
+                            ) : (
+                                <></>
+                            )}
 
                             <div className="space-y-2">
                                 <label className="font-label-sm text-on-secondary-container block" htmlFor="caption">
-                                    Cerita
+                                    {isGuessImageTab ? "Caption" : "Cerita / Keluh Kesah"}
                                 </label>
                                 <div className="relative">
                                     <textarea
@@ -171,8 +230,12 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
                                         rows={4}
                                         value={caption}
                                         onChange={(e) => setCaption(e.target.value)}
-                                        placeholder="Tuliskan cerita, sambat sehat, atau momen berharga yang ingin kamu simpan..."
-                                        className="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-primary focus:ring-0 rounded-t-xl p-4 font-body-md text-on-surface placeholder:text-outline transition-all focus:bg-surface-container"
+                                        placeholder={
+                                            isGuessImageTab
+                                                ? "Tuliskan petunjuk singkat untuk foto ini..."
+                                                : "Tuliskan sambat sehat atau keluh kesah yang ingin kamu bagikan..."
+                                        }
+                                        className="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-primary focus:ring-0 rounded-t-xl p-4 font-body-md text-on-surface text-start placeholder:text-outline transition-all focus:bg-surface-container"
                                     />
                                 </div>
                             </div>
@@ -180,7 +243,7 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
                             <div className="flex items-center justify-end gap-4 pt-4">
                                 <button
                                     type="button"
-                                    onClick={() => { handleClearFile(); setIsOpen(false); }}
+                                    onClick={handleClose}
                                     className="px-6 py-3 rounded-xl font-label-sm text-primary hover:bg-primary/5 transition-all"
                                 >
                                     Cancel
@@ -188,7 +251,7 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
                                 <button
                                     type="submit"
                                     disabled={isUploading}
-                                    className={`bg-primary text-on-primary px-8 py-3 rounded-xl font-label-sm font-bold transition-all shadow-md ${isUploading ? 'opacity-50' : 'hover:opacity-90 active:scale-95'}`}
+                                    className={`bg-primary text-on-primary px-8 py-3 rounded-xl font-label-sm font-bold transition-all shadow-md ${isUploading ? "opacity-50" : "hover:opacity-90 active:scale-95"}`}
                                 >
                                     {isUploading ? "Menyimpan..." : "Simpan"}
                                 </button>
