@@ -21,6 +21,8 @@ interface MemoryListProps {
     refreshKey: number;
 }
 
+const PINNED_MEMORY_ID = "30774a7f-77c9-42ce-9679-f3fc47999956";
+
 export default function MemoryList({ refreshKey }: MemoryListProps) {
     const [memories, setMemories] = useState<Memory[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -28,7 +30,12 @@ export default function MemoryList({ refreshKey }: MemoryListProps) {
     const fetchMemories = async () => {
         try {
             const response = await axios.get("/api/memories");
-            setMemories(response.data);
+            const sorted = [...response.data].sort((a: Memory, b: Memory) => {
+                if (a.id === PINNED_MEMORY_ID) return -1;
+                if (b.id === PINNED_MEMORY_ID) return 1;
+                return 0;
+            });
+            setMemories(sorted);
         } catch (error) {
             console.error("Failed to fetch memories", error);
         } finally {

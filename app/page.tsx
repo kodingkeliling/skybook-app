@@ -50,10 +50,10 @@ export default function Home() {
 
       <section className="flex flex-col items-center text-center mb-12 space-y-6">
         <h1 className="font-display text-headline-lg-mobile md:text-headline-lg text-primary max-w-3xl">
-          Setiap gambar ada cerita. Tunjukan pesona kalian ke isi kantor Skyshi
+        Setiap gambar ada cerita. Setiap cerita belum tentu ada gambar. Tapi setiap Gambar dan Cerita, pasti selalu ada KITA. ASEEKKKK
         </h1>
         <p className="font-body-lg text-on-surface-variant max-w-xl">
-          Kira-kira foto masa kecil ini milik siapa yaaa?
+        Tunjukan cerita kalian ke se-isi kantor Skyshi, bahwasannya Weekly Bounding TIM 1 ga akan pernah MATIII.
         </p>
       </section>
 
