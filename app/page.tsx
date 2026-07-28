@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import MemoryForm from "@/components/features/memory-form";
 import MemoryList from "@/components/features/memory-list";
+import PlayModeModal from "@/components/features/play-mode-modal";
 import RandomVoteModal from "@/components/features/random-vote-modal";
 import { useVoterStore } from "@/stores/use-voter-store";
 import { Play } from "lucide-react";
@@ -12,12 +13,11 @@ export default function Home() {
   const [refreshKey, setRefreshKey] = useState(0);
   const { voterName, setVoterName } = useVoterStore();
   const [showNameModal, setShowNameModal] = useState(false);
-  const [showRandomVote, setShowRandomVote] = useState(false);
+  const [showPlayModeModal, setShowPlayModeModal] = useState(false);
+  const [activePlayMode, setActivePlayMode] = useState<"voting" | "sambat-sehat" | null>(null);
   const [inputName, setInputName] = useState("");
-  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
     if (!voterName) {
       setShowNameModal(true);
     }
@@ -25,6 +25,11 @@ export default function Home() {
 
   const handleRefresh = () => {
     setRefreshKey((prev) => prev + 1);
+  };
+
+  const handleSelectPlayMode = (mode: "voting" | "sambat-sehat") => {
+    setShowPlayModeModal(false);
+    setActivePlayMode(mode);
   };
 
   const handleSaveName = () => {
@@ -35,8 +40,6 @@ export default function Home() {
     setVoterName(inputName.trim());
     setShowNameModal(false);
   };
-
-  if (!isClient) return null;
 
   return (
     <main className="max-w-container-max-width mx-auto px-margin-mobile md:px-margin-desktop py-12">
@@ -58,11 +61,11 @@ export default function Home() {
         <h2 className="font-display text-headline-md text-on-surface">Tebak Siapa Ini?</h2>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowRandomVote(true)}
+            onClick={() => setShowPlayModeModal(true)}
             className="flex items-center gap-1 font-label-sm px-4 py-2 bg-primary/10 text-primary border border-primary/20 font-bold rounded-lg hover:bg-primary/20 transition-all shadow-sm"
           >
             <Play size={18} />
-            <span className="">Mulai Voting</span>
+            <span className="">Mulai Bermain</span>
           </button>
           <MemoryForm onSuccess={handleRefresh} />
         </div>
@@ -70,8 +73,18 @@ export default function Home() {
 
       <MemoryList refreshKey={refreshKey} />
 
-      {showRandomVote && (
-        <RandomVoteModal onClose={() => setShowRandomVote(false)} />
+      {showPlayModeModal && (
+        <PlayModeModal
+          onClose={() => setShowPlayModeModal(false)}
+          onSelectMode={handleSelectPlayMode}
+        />
+      )}
+
+      {activePlayMode && (
+        <RandomVoteModal
+          mode={activePlayMode}
+          onClose={() => setActivePlayMode(null)}
+        />
       )}
 
       {showNameModal && (
@@ -79,7 +92,7 @@ export default function Home() {
           <div className="bg-surface-container-lowest w-full max-w-md rounded-xl scrapbook-shadow animate-in fade-in zoom-in duration-300 p-8 flex flex-col items-center text-center">
             <h2 className="font-display text-headline-md text-primary mb-2">Halo!</h2>
             <p className="font-body-md text-on-surface-variant mb-6">
-              Sebelum mulai ngevote, kasih tau nama panggilan kamu ya.
+              Sebelum mulai bermain, kasih tau nama panggilan kamu ya.
             </p>
             <input
               type="text"

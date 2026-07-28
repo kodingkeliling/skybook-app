@@ -45,8 +45,8 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!file) {
-            toast.error("Silakan pilih gambar terlebih dahulu.");
+        if (caption.trim() === "") {
+            toast.error("Cerita tidak boleh kosong.");
             return;
         }
 
@@ -55,8 +55,11 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
 
         try {
             const formData = new FormData();
-            formData.append("file", file);
-            formData.append("caption", caption.trim() === "" ? "Foto kenangan" : caption);
+            formData.append("caption", caption.trim());
+
+            if (file) {
+                formData.append("file", file);
+            }
 
             await axios.post("/api/memories", formData, {
                 headers: {
@@ -69,7 +72,7 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
             setCaption("");
             handleClearFile();
             if (onSuccess) onSuccess();
-        } catch (error: any) {
+        } catch (error) {
             console.error("Upload Error:", error);
             toast.error("Gagal menyimpan memori.");
         } finally {
@@ -85,7 +88,7 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
                 className="flex items-center gap-1 px-4 py-2 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 transition-all shadow-md"
             >
                 <UploadCloud size={20} />
-                <span>Upload Gambar</span>
+                <span>Tulis Cerita</span>
             </button>
 
             {isOpen && (
@@ -97,7 +100,7 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
                                 <div className="bg-primary/10 p-2 rounded-lg text-primary">
                                     <UploadCloud size={24} />
                                 </div>
-                                <h2 className="font-display text-headline-md text-primary">Upload Memory</h2>
+                                <h2 className="font-display text-headline-md text-primary">Buat Memory</h2>
                             </div>
                             <button
                                 onClick={() => { handleClearFile(); setIsOpen(false); }}
@@ -111,7 +114,7 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
                         <form onSubmit={handleSubmit} className="p-8 space-y-6">
                             <div className="space-y-2">
                                 <label className="font-label-sm text-on-secondary-container block">
-                                    Upload Gambar
+                                    Upload Gambar Opsional
                                 </label>
                                 <div
                                     onDragOver={(e) => e.preventDefault()}
@@ -140,10 +143,10 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
                                             </div>
                                             <div className="text-center animate-in fade-in duration-200">
                                                 <p className="font-body-lg text-on-surface font-semibold">
-                                                    Click to upload or drag and drop
+                                                    Tambahkan foto kalau ada
                                                 </p>
                                                 <p className="font-body-md text-outline">
-                                                    High-res PNG, JPG or HEIC (Max. 20MB)
+                                                    Bisa dikosongkan kalau mau post cerita saja
                                                 </p>
                                             </div>
                                         </>
@@ -160,7 +163,7 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
 
                             <div className="space-y-2">
                                 <label className="font-label-sm text-on-secondary-container block" htmlFor="caption">
-                                    Input Caption cerita
+                                    Cerita
                                 </label>
                                 <div className="relative">
                                     <textarea
@@ -168,7 +171,7 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
                                         rows={4}
                                         value={caption}
                                         onChange={(e) => setCaption(e.target.value)}
-                                        placeholder="Tuliskan momen berharga yang ingin kamu simpan..."
+                                        placeholder="Tuliskan cerita, sambat sehat, atau momen berharga yang ingin kamu simpan..."
                                         className="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-primary focus:ring-0 rounded-t-xl p-4 font-body-md text-on-surface placeholder:text-outline transition-all focus:bg-surface-container"
                                     />
                                 </div>

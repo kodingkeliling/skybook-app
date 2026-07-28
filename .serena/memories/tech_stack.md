@@ -1,0 +1,7 @@
+- Framework: Next.js 16 App Router with React 19 and TypeScript.
+- Styling: Tailwind CSS 4 utility classes.
+- Client HTTP: axios in client components.
+- Notifications/icons: sonner, lucide-react.
+- Persistence: Prisma with PostgreSQL datasource; generated client from `@prisma/client` via `lib/prisma.ts`.
+- Client state: Zustand with `persist` middleware for voter/auth-like local state.
+- Package manager/scripts from `package.json`: npm, `npm run dev`, `npm run lint`, `npm run build`.

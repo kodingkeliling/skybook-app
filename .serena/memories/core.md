@@ -1,0 +1,5 @@
+- App is a small Next.js App Router scrapbook app under `app/`, `components/features/`, `stores/`, `lib/`, `prisma/`.
+- Main page is `app/page.tsx`; it composes `MemoryForm`, `MemoryList`, play/vote modals, and a persisted voter-name gate.
+- Data model centers on `Memory`; related interactions currently include `Vote` and `Comment`.
+- API routes live in `app/api/**`; UI calls them directly from client components with axios.
+- Read `mem:tech_stack` for framework/package details, `mem:conventions` for component/data patterns, and `mem:task_completion` for required checks.

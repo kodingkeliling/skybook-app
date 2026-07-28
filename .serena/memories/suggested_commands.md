@@ -1,0 +1,5 @@
+- Dev server: `cd /Users/macbookpro/Downloads/scrapbook-skyshi/skybook && npm run dev`
+- Lint: `cd /Users/macbookpro/Downloads/scrapbook-skyshi/skybook && npm run lint`
+- Production build/type check: `cd /Users/macbookpro/Downloads/scrapbook-skyshi/skybook && npm run build`
+- Prisma client regenerate after schema edits: `cd /Users/macbookpro/Downloads/scrapbook-skyshi/skybook && npx prisma generate`
+- Local migration attempt: `cd /Users/macbookpro/Downloads/scrapbook-skyshi/skybook && npx prisma migrate dev --name <name>`

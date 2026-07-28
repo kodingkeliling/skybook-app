@@ -1,0 +1,5 @@
+- Feature UI is organized mostly under `components/features/<kebab-case>/index.tsx`; page composes these feature blocks.
+- Existing app pattern uses direct axios calls from client components to Next route handlers; there is no shared API service layer or React Query yet.
+- Persisted voter identity lives in Zustand (`stores/use-voter-store.ts`) and is reused for voting/comment actions.
+- Prisma route handlers return plain JSON objects; list route for memories is the source of truth for list cards and may include related records.
+- Tailwind-first styling; interactions often rely on simple local `useState` and modal overlays.

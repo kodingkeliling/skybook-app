@@ -1,0 +1,4 @@
+- After code edits, run `npm run lint` and `npm run build` from `skybook/`.
+- After Prisma schema edits, also run `npx prisma generate`; run `npx prisma migrate dev --name <name>` when database/network access is available.
+- Check edited files for IDE diagnostics if available.
+- If lint fails, distinguish pre-existing repo errors from task-specific regressions before closing the task.

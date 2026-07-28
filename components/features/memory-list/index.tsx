@@ -7,8 +7,14 @@ import MemoryCard from "@/components/features/memory-card";
 interface Memory {
     id: string;
     caption: string;
-    imageUrl: string;
+    imageUrl: string | null;
     createdAt: string;
+    comments: {
+        id: string;
+        authorName: string;
+        content: string;
+        createdAt: string;
+    }[];
 }
 
 interface MemoryListProps {
@@ -57,7 +63,7 @@ export default function MemoryList({ refreshKey }: MemoryListProps) {
         return (
             <div className="text-center py-20 border-2 border-dashed border-outline-variant/30 rounded-xl">
                 <p className="text-on-surface-variant font-body-md">
-                    Belum ada memori tersimpan. Ayo upload foto pertama!
+                    Belum ada memori tersimpan. Ayo tulis cerita atau upload foto pertama!
                 </p>
             </div>
         );

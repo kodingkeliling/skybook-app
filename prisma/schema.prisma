@@ -11,10 +11,11 @@ datasource db {
 model Memory {
   id          String   @id @default(uuid())
   caption     String   @db.Text
-  imageUrl    String   
+  imageUrl    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   votes       Vote[]
+  comments    Comment[]
 
   @@map("memories")
 }
@@ -30,4 +31,17 @@ model Vote {
 
   @@unique([memoryId, voterName])
   @@map("votes")
+}
+
+model Comment {
+  id         String   @id @default(uuid())
+  memoryId   String
+  authorName String
+  content    String   @db.Text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  memory     Memory   @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
 }
