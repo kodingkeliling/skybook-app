@@ -49,7 +49,7 @@ export default function MemoryList({ refreshKey }: MemoryListProps) {
 
     if (isLoading) {
         return (
-            <div className="masonry-grid">
+            <div className="masonry-grid ">
                 {[...Array(6)].map((_, i) => (
                     <div
                         key={i}

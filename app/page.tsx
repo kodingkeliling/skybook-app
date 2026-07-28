@@ -57,7 +57,7 @@ export default function Home() {
         </p>
       </section>
 
-      <div className="flex flex-col gap-2 md:flex-row justify-between items-center mb-8 border-b border-outline-variant/30 pb-4">
+      <div className="flex flex-col gap-2 md:flex-row justify-between items-center mb-6 border-b border-outline-variant/30">
         <h2 className="font-display text-headline-md text-on-surface">Kenangan Kita</h2>
         <div className="flex items-center gap-2">
           <button
@@ -71,7 +71,9 @@ export default function Home() {
         </div>
       </div>
 
+    <div className="px-2 md:px-0">
       <MemoryList refreshKey={refreshKey} />
+      </div>
 
       {showPlayModeModal && (
         <PlayModeModal
