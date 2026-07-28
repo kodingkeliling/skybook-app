@@ -58,7 +58,7 @@ export default function Home() {
       </section>
 
       <div className="flex flex-col gap-2 md:flex-row justify-between items-center mb-8 border-b border-outline-variant/30 pb-4">
-        <h2 className="font-display text-headline-md text-on-surface">Tebak Siapa Ini?</h2>
+        <h2 className="font-display text-headline-md text-on-surface">Kenangan Kita</h2>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowPlayModeModal(true)}
