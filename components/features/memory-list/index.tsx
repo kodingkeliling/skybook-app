@@ -8,6 +8,7 @@ interface Memory {
     id: string;
     caption: string;
     imageUrl: string | null;
+    type: string;
     createdAt: string;
     comments: {
         id: string;

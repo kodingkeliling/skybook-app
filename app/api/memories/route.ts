@@ -22,6 +22,14 @@ export async function POST(request: Request) {
         const formData = await request.formData();
         const caption = formData.get("caption") as string;
         const file = formData.get("file") as File | null;
+        const rawType = (formData.get("type") as string | null) ?? "TEBAK_GAMBAR";
+
+        // Validate type
+        const validTypes = ["TEBAK_GAMBAR", "SAMBAT_SEHAT", "LOVE"] as const;
+        type MemType = typeof validTypes[number];
+        const memoryType: MemType = validTypes.includes(rawType as MemType)
+            ? (rawType as MemType)
+            : "TEBAK_GAMBAR";
 
         if (!caption?.trim()) {
             return NextResponse.json({ error: "Caption is required" }, { status: 400 });
@@ -47,9 +55,9 @@ export async function POST(request: Request) {
             const ikResponse = await fetch(IK_URL, {
                 method: "POST",
                 headers: {
-                    "Authorization": `Basic ${basicAuth}`
+                    "Authorization": `Basic ${basicAuth}`,
                 },
-                body: ikFormData
+                body: ikFormData,
             });
 
             if (!ikResponse.ok) {
@@ -66,6 +74,7 @@ export async function POST(request: Request) {
             data: {
                 caption: caption.trim(),
                 imageUrl,
+                type: memoryType,
             },
         });
 

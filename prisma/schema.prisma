@@ -9,15 +9,22 @@ datasource db {
 }
 
 model Memory {
-  id          String   @id @default(uuid())
-  caption     String   @db.Text
+  id          String     @id @default(uuid())
+  caption     String     @db.Text
   imageUrl    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  type        MemoryType @default(TEBAK_GAMBAR)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   votes       Vote[]
   comments    Comment[]
 
   @@map("memories")
+}
+
+enum MemoryType {
+  TEBAK_GAMBAR
+  SAMBAT_SEHAT
+  LOVE
 }
 
 model Vote {

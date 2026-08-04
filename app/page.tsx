@@ -14,7 +14,7 @@ export default function Home() {
   const { voterName, setVoterName } = useVoterStore();
   const [showNameModal, setShowNameModal] = useState(false);
   const [showPlayModeModal, setShowPlayModeModal] = useState(false);
-  const [activePlayMode, setActivePlayMode] = useState<"voting" | "sambat-sehat" | null>(null);
+  const [activePlayMode, setActivePlayMode] = useState<"voting" | "sambat-sehat" | "love" | null>(null);
   const [inputName, setInputName] = useState("");
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function Home() {
     setRefreshKey((prev) => prev + 1);
   };
 
-  const handleSelectPlayMode = (mode: "voting" | "sambat-sehat") => {
+  const handleSelectPlayMode = (mode: "voting" | "sambat-sehat" | "love") => {
     setShowPlayModeModal(false);
     setActivePlayMode(mode);
   };
