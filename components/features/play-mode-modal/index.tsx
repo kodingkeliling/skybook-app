@@ -57,8 +57,8 @@ export default function PlayModeModal({ onClose, onSelectMode }: PlayModeModalPr
                             type="button"
                             onClick={() => onSelectMode(mode)}
                             className={`rounded-2xl border p-5 text-left transition-all hover:-translate-y-0.5 ${isLove
-                                    ? "border-rose-200/30 bg-rose-50/50 hover:border-rose-300/50 hover:bg-rose-50/80 dark:bg-rose-950/20 dark:border-rose-800/30"
-                                    : "border-outline-variant/20 bg-surface-container-low hover:border-primary/30 hover:bg-primary/5"
+                                ? "border-rose-200/30 bg-rose-50/50 hover:border-rose-300/50 hover:bg-rose-50/80 dark:bg-rose-950/20 dark:border-rose-800/30"
+                                : "border-outline-variant/20 bg-surface-container-low hover:border-primary/30 hover:bg-primary/5"
                                 }`}
                         >
                             <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl ${isLove ? "bg-rose-500/15 text-rose-500" : "bg-primary/10 text-primary"

@@ -42,8 +42,8 @@ export default function MemoryCard({ memory }: MemoryCardProps) {
 
             {/* Love badge */}
             {isLove && (
-                <div className="absolute -right-2 -top-2 z-10 flex items-center gap-0.5 bg-rose-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md select-none">
-                    💖💖
+                <div className="absolute -right-2 -top-2 z-10 flex items-center justify-center bg-rose-500 text-white text-sm w-8 h-8 rounded-full shadow-md select-none">
+                    💖
                 </div>
             )}
 
@@ -63,11 +63,11 @@ export default function MemoryCard({ memory }: MemoryCardProps) {
 
             <div className="px-2 pb-2">
                 {isLove && (
-                    <p className="text-rose-400 text-sm mb-1 font-medium">💕 Cerita Cinta</p>
+                    <p className="text-rose-500 text-xs font-semibold uppercase tracking-wide mb-2">💕 Cerita Cinta</p>
                 )}
                 <MemoryCaption
                     text={memory.caption}
-                    className={`font-body-md italic ${isLove ? "text-rose-700/80 dark:text-rose-300/80" : "text-on-surface-variant"}`}
+                    className={`text-base leading-relaxed font-semibold not-italic ${isLove ? "text-rose-950" : "text-slate-900"}`}
                 />
 
                 <div className="mt-5">
