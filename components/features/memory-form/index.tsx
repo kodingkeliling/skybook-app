@@ -4,6 +4,7 @@ import React, { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Heart, ImagePlus, Images, Loader2, MessageCircle, Star, UploadCloud, X } from "lucide-react";
 import axios from "axios";
+import { useVoterStore } from "@/stores/use-voter-store";
 
 interface MemoryFormProps {
     onSuccess?: () => void;
@@ -75,6 +76,7 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
     const [file, setFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { voterName } = useVoterStore();
 
     const config = TAB_CONFIG[activeTab];
 
@@ -153,6 +155,9 @@ export default function MemoryForm({ onSuccess }: MemoryFormProps) {
             formData.append("type", config.typeValue);
             if (activeTab === "apresiasi" && targets.length > 0) {
                 formData.append("targets", JSON.stringify(targets));
+                if (voterName) {
+                    formData.append("sender", voterName);
+                }
             }
 
             if (config.imageAllowed && file) {

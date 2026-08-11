@@ -24,6 +24,7 @@ export async function POST(request: Request) {
         const file = formData.get("file") as File | null;
         const rawType = (formData.get("type") as string | null) ?? "TEBAK_GAMBAR";
         const targetsRaw = formData.get("targets") as string | null;
+        const sender = formData.get("sender") as string | null;
         
         let targets: string[] = [];
         if (targetsRaw) {
@@ -86,6 +87,7 @@ export async function POST(request: Request) {
                 imageUrl,
                 type: memoryType,
                 targets,
+                sender,
             },
         });
 

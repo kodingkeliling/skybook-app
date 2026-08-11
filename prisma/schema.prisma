@@ -13,6 +13,7 @@ model Memory {
   caption     String     @db.Text
   imageUrl    String?
   targets     String[]
+  sender      String?
   type        MemoryType @default(TEBAK_GAMBAR)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt

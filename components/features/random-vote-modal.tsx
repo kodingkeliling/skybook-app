@@ -14,6 +14,7 @@ interface Memory {
     createdAt: string;
     comments?: MemoryComment[];
     targets?: string[];
+    sender?: string | null;
 }
 
 interface VoteGroup {
@@ -392,6 +393,11 @@ export default function RandomVoteModal({ mode, onClose }: RandomVoteModalProps)
                             {isApresiasiMode && (
                                 <div className="mb-2">
                                     <p className="text-amber-600 text-xs font-semibold uppercase tracking-wide">🌟 Apresiasi</p>
+                                    {current.sender && (
+                                        <p className="text-amber-700/80 text-xs font-medium mt-1">
+                                            Dari: <span className="font-bold">{current.sender}</span>
+                                        </p>
+                                    )}
                                     {current.targets && current.targets.length > 0 && (
                                         <p className="text-amber-700/80 text-xs font-medium mt-1">
                                             Untuk: <span className="font-bold">{current.targets.join(", ")}</span>

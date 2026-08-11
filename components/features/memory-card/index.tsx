@@ -18,6 +18,7 @@ interface MemoryCardProps {
             createdAt: Date | string;
         }[];
         targets?: string[];
+        sender?: string | null;
     };
 }
 
@@ -101,6 +102,11 @@ export default function MemoryCard({ memory }: MemoryCardProps) {
                             <Star size={14} fill="currentColor" />
                             <p className="text-xs font-semibold uppercase tracking-wide">Apresiasi</p>
                         </div>
+                        {memory.sender && (
+                            <p className="text-amber-700/80 text-xs font-medium mt-1">
+                                Dari: <span className="font-bold">{memory.sender}</span>
+                            </p>
+                        )}
                         {memory.targets && memory.targets.length > 0 && (
                             <p className="text-amber-700/80 text-xs font-medium mt-1">
                                 Untuk: <span className="font-bold">{memory.targets.join(", ")}</span>
