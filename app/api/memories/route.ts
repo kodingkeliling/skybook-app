@@ -23,9 +23,19 @@ export async function POST(request: Request) {
         const caption = formData.get("caption") as string;
         const file = formData.get("file") as File | null;
         const rawType = (formData.get("type") as string | null) ?? "TEBAK_GAMBAR";
+        const targetsRaw = formData.get("targets") as string | null;
+        
+        let targets: string[] = [];
+        if (targetsRaw) {
+            try {
+                targets = JSON.parse(targetsRaw);
+            } catch (e) {
+                console.error("Failed to parse targets", e);
+            }
+        }
 
         // Validate type
-        const validTypes = ["TEBAK_GAMBAR", "SAMBAT_SEHAT", "LOVE"] as const;
+        const validTypes = ["TEBAK_GAMBAR", "SAMBAT_SEHAT", "LOVE", "APRESIASI"] as const;
         type MemType = typeof validTypes[number];
         const memoryType: MemType = validTypes.includes(rawType as MemType)
             ? (rawType as MemType)
@@ -75,6 +85,7 @@ export async function POST(request: Request) {
                 caption: caption.trim(),
                 imageUrl,
                 type: memoryType,
+                targets,
             },
         });
 

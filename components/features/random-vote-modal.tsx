@@ -3,7 +3,7 @@ import axios from "axios";
 import MemoryCaption from "@/components/features/memory-caption";
 import MemoryComments, { type MemoryComment } from "@/components/features/memory-comments";
 import { useVoterStore } from "@/stores/use-voter-store";
-import { ArrowRight, ChevronLeft, ChevronRight, ChevronUp, FileText, Heart, Loader2, Users, X } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, ChevronUp, MessageCircle, Heart, Loader2, Users, X, Star } from "lucide-react";
 import { toast } from "sonner";
 
 interface Memory {
@@ -13,6 +13,7 @@ interface Memory {
     type: string;
     createdAt: string;
     comments?: MemoryComment[];
+    targets?: string[];
 }
 
 interface VoteGroup {
@@ -24,7 +25,7 @@ interface VoteGroup {
 const CANDIDATES = ["Jamjam", "Dimy", "Ida", "Ryan", "Sidik"];
 
 interface RandomVoteModalProps {
-    mode: "voting" | "sambat-sehat" | "love";
+    mode: "voting" | "sambat-sehat" | "love" | "apresiasi";
     onClose: () => void;
 }
 
@@ -67,13 +68,18 @@ export default function RandomVoteModal({ mode, onClose }: RandomVoteModalProps)
                 const res = await axios.get("/api/memories");
                 const filtered = (res.data as Memory[]).filter((memory) => {
                     if (mode === "voting") {
-                        return Boolean(memory.imageUrl) && memory.type !== "LOVE";
+                        return Boolean(memory.imageUrl) && memory.type !== "LOVE" && memory.type !== "APRESIASI";
                     }
                     if (mode === "sambat-sehat") {
                         return !memory.imageUrl && memory.type === "SAMBAT_SEHAT";
                     }
-                    // love mode
-                    return memory.type === "LOVE";
+                    if (mode === "love") {
+                        return memory.type === "LOVE";
+                    }
+                    if (mode === "apresiasi") {
+                        return memory.type === "APRESIASI";
+                    }
+                    return false;
                 });
 
                 if (cancelled) return;
@@ -83,6 +89,7 @@ export default function RandomVoteModal({ mode, onClose }: RandomVoteModalProps)
                 toast.error(
                     mode === "voting" ? "Gagal mengambil data foto."
                     : mode === "love" ? "Gagal mengambil cerita cinta."
+                    : mode === "apresiasi" ? "Gagal mengambil data apresiasi."
                     : "Gagal mengambil data cerita."
                 );
                 onCloseRef.current();
@@ -255,18 +262,21 @@ export default function RandomVoteModal({ mode, onClose }: RandomVoteModalProps)
     if (memories.length === 0) {
         const emptyTitle = mode === "voting" ? "Belum ada foto untuk voting"
             : mode === "love" ? "Belum ada cerita cinta 💖"
+            : mode === "apresiasi" ? "Belum ada apresiasi 🌟"
             : "Belum ada sambat sehat";
         const emptyDesc = mode === "voting"
             ? "Post yang hanya berisi cerita tidak akan dimasukkan ke mode voting."
             : mode === "love"
             ? "Tambahkan cerita cinta dulu di menu Tulis Cerita → tab Love!"
+            : mode === "apresiasi"
+            ? "Tambahkan apresiasi dulu di menu Tulis Cerita → tab Apresiasi!"
             : "Tambahkan post tanpa gambar dulu supaya mode ini bisa dimainkan.";
         return (
             <div className="fixed inset-0 z-[70] bg-inverse-surface/50 backdrop-blur-strong flex items-center justify-center p-4">
                 <div className={`w-full max-w-md rounded-2xl p-6 text-center shadow-2xl ${
-                    mode === "love" ? "bg-rose-50 border border-rose-200/50" : "bg-surface-container-lowest"
+                    mode === "love" ? "bg-rose-50 border border-rose-200/50" : mode === "apresiasi" ? "bg-amber-50 border border-amber-200/50" : "bg-surface-container-lowest"
                 }`}>
-                    <h2 className={`font-display text-headline-sm ${mode === "love" ? "text-rose-500" : "text-primary"}`}>
+                    <h2 className={`font-display text-headline-sm ${mode === "love" ? "text-rose-500" : mode === "apresiasi" ? "text-amber-500" : "text-primary"}`}>
                         {emptyTitle}
                     </h2>
                     <p className="mt-2 text-sm text-on-surface-variant">
@@ -276,7 +286,7 @@ export default function RandomVoteModal({ mode, onClose }: RandomVoteModalProps)
                         type="button"
                         onClick={onClose}
                         className={`mt-5 rounded-xl px-4 py-3 font-bold transition-opacity hover:opacity-90 ${
-                            mode === "love" ? "bg-rose-500 text-white" : "bg-primary text-on-primary"
+                            mode === "love" ? "bg-rose-500 text-white" : mode === "apresiasi" ? "bg-amber-500 text-white" : "bg-primary text-on-primary"
                         }`}
                     >
                         Tutup
@@ -289,11 +299,14 @@ export default function RandomVoteModal({ mode, onClose }: RandomVoteModalProps)
     const current = memories[currentIndex];
     const isVotingMode = mode === "voting";
     const isLoveMode = mode === "love";
-    const title = isVotingMode ? "Voting Random" : isLoveMode ? "Love 💖" : "Sambat Sehat";
+    const isApresiasiMode = mode === "apresiasi";
+    const title = isVotingMode ? "Voting Random" : isLoveMode ? "Love 💖" : isApresiasiMode ? "Apresiasi 🌟" : "Sambat Sehat";
     const description = isVotingMode
         ? "Tebak pemilik foto dari caption berikut."
         : isLoveMode
         ? "Baca cerita cinta yang pernah dibagikan. Hangatkan hatimu!"
+        : isApresiasiMode
+        ? "Baca apresiasi untuk teman-teman hebat. Tebarkan kebaikan!"
         : "Baca caption random tanpa gambar dan nikmati sesi sambat sehat.";
 
     const handlePrevious = () => {
@@ -309,6 +322,7 @@ export default function RandomVoteModal({ mode, onClose }: RandomVoteModalProps)
             toast.success(
                 isVotingMode ? "Semua foto sudah ditampilkan!"
                 : isLoveMode ? "Semua cerita cinta sudah dibaca! 💖"
+                : isApresiasiMode ? "Semua apresiasi sudah dibaca! 🌟"
                 : "Semua sambat sehat sudah ditampilkan!"
             );
             onClose();
@@ -343,23 +357,25 @@ export default function RandomVoteModal({ mode, onClose }: RandomVoteModalProps)
                     <div className="p-5 space-y-4">
                         <div className="text-center">
                             <div className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full ${
-                                isLoveMode ? "bg-rose-500/15 text-rose-500" : "bg-primary/10 text-primary"
+                                isLoveMode ? "bg-rose-500/15 text-rose-500" : isApresiasiMode ? "bg-amber-500/15 text-amber-500" : "bg-primary/10 text-primary"
                             }`}>
-                                {isVotingMode ? <Users size={20} /> : isLoveMode ? <Heart size={20} /> : <FileText size={20} />}
+                                {isVotingMode ? <Users size={20} /> : isLoveMode ? <Heart size={20} /> : isApresiasiMode ? <Star size={20} /> : <MessageCircle size={20} />}
                             </div>
-                            <h2 className={`mt-3 font-display text-headline-sm ${isLoveMode ? "text-rose-500" : "text-primary"}`}>{title}</h2>
+                            <h2 className={`mt-3 font-display text-headline-sm ${isLoveMode ? "text-rose-500" : isApresiasiMode ? "text-amber-500" : "text-primary"}`}>{title}</h2>
                             <p className="mt-1 text-sm text-on-surface-variant">{description}</p>
                         </div>
 
-                        {(isVotingMode || isLoveMode) && current.imageUrl && (
+                        {(isVotingMode || isLoveMode || isApresiasiMode) && current.imageUrl && (
                             <div className={`w-full flex items-center justify-center overflow-hidden rounded-xl border ${
                                 isLoveMode
                                     ? "bg-rose-50/50 border-rose-200/30"
+                                    : isApresiasiMode
+                                    ? "bg-amber-50/50 border-amber-200/30"
                                     : "bg-surface-container-low border-outline-variant/10"
                             }`}>
                                 <img
                                     key={current.id}
-                                    alt={isLoveMode ? "Foto Kenangan Cinta" : "Foto Voting"}
+                                    alt={isLoveMode ? "Foto Kenangan Cinta" : isApresiasiMode ? "Foto Apresiasi" : "Foto Voting"}
                                     src={current.imageUrl}
                                     className="w-full h-auto max-h-[45vh] md:max-h-[50vh] object-contain"
                                     referrerPolicy="no-referrer"
@@ -368,15 +384,25 @@ export default function RandomVoteModal({ mode, onClose }: RandomVoteModalProps)
                         )}
 
                         <div className={`rounded-2xl p-5 ${
-                            isLoveMode ? "bg-rose-50/60 border border-rose-200/30" : "bg-surface-container-low"
+                            isLoveMode ? "bg-rose-50/60 border border-rose-200/30" : isApresiasiMode ? "bg-amber-50/60 border border-amber-200/30" : "bg-surface-container-low"
                         }`}>
                             {isLoveMode && (
                                 <p className="text-rose-400 text-xs font-medium mb-2">💕 Cerita Cinta</p>
                             )}
+                            {isApresiasiMode && (
+                                <div className="mb-2">
+                                    <p className="text-amber-600 text-xs font-semibold uppercase tracking-wide">🌟 Apresiasi</p>
+                                    {current.targets && current.targets.length > 0 && (
+                                        <p className="text-amber-700/80 text-xs font-medium mt-1">
+                                            Untuk: <span className="font-bold">{current.targets.join(", ")}</span>
+                                        </p>
+                                    )}
+                                </div>
+                            )}
                             <MemoryCaption
                                 text={current.caption}
                                 className={`font-body-md italic text-start text-sm md:text-base ${
-                                    isLoveMode ? "text-rose-700/80" : "text-on-surface-variant"
+                                    isLoveMode ? "text-rose-700/80" : isApresiasiMode ? "text-amber-900/80" : "text-on-surface-variant"
                                 }`}
                             />
                         </div>
@@ -387,7 +413,7 @@ export default function RandomVoteModal({ mode, onClose }: RandomVoteModalProps)
                                 memoryId={current.id}
                                 initialComments={current.comments ?? []}
                                 defaultOpen
-                                placeholder={isLoveMode ? "Tulis respons untuk cerita cinta ini... 💖" : "Tulis tanggapan untuk keluh kesah ini..."}
+                                placeholder={isLoveMode ? "Tulis respons untuk cerita cinta ini... 💖" : isApresiasiMode ? "Tulis respons apresiasi ini... 🌟" : "Tulis tanggapan untuk keluh kesah ini..."}
                             />
                         )}
 
@@ -478,7 +504,7 @@ export default function RandomVoteModal({ mode, onClose }: RandomVoteModalProps)
                                 >
                                     <ChevronLeft size={16} />
                                     <span>
-                                        {isVotingMode ? "Kembali ke Foto Sebelumnya" : isLoveMode ? "Kembali ke Cerita Cinta Sebelumnya" : "Kembali ke Cerita Sebelumnya"}
+                                        {isVotingMode ? "Kembali ke Foto Sebelumnya" : isLoveMode ? "Kembali ke Cerita Cinta Sebelumnya" : isApresiasiMode ? "Kembali ke Apresiasi Sebelumnya" : "Kembali ke Cerita Sebelumnya"}
                                     </span>
                                 </button>
                             )}
@@ -496,10 +522,10 @@ export default function RandomVoteModal({ mode, onClose }: RandomVoteModalProps)
                                 <button
                                     onClick={handleNext}
                                     className={`w-full flex items-center justify-center gap-2 py-2 text-label-sm transition-colors ${
-                                        isLoveMode ? "text-rose-400 hover:text-rose-500" : "text-outline hover:text-primary"
+                                        isLoveMode ? "text-rose-400 hover:text-rose-500" : isApresiasiMode ? "text-amber-500 hover:text-amber-600" : "text-outline hover:text-primary"
                                     }`}
                                 >
-                                    {isVotingMode ? "Lewati" : isLoveMode ? "Lanjut ke Cerita Cinta Berikutnya 💖" : "Lanjut ke Cerita Berikutnya"} <ChevronRight size={16} />
+                                    {isVotingMode ? "Lewati" : isLoveMode ? "Lanjut ke Cerita Cinta Berikutnya 💖" : isApresiasiMode ? "Lanjut ke Apresiasi Berikutnya 🌟" : "Lanjut ke Cerita Berikutnya"} <ChevronRight size={16} />
                                 </button>
                             )}
                         </div>
