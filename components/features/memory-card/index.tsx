@@ -32,14 +32,14 @@ export default function MemoryCard({ memory }: MemoryCardProps) {
 
     return (
         <div className={`memory-card relative p-3 rounded-xl paper-shadow border transition-all ${isLove
-                ? "bg-rose-50/60 dark:bg-rose-950/20 border-rose-200/50"
-                : isApresiasi
-                    ? "bg-amber-50/60 dark:bg-amber-950/20 border-amber-200/50"
-                    : isTebak
-                        ? "bg-blue-50/60 dark:bg-blue-950/20 border-blue-200/50"
-                        : isSambat
-                            ? "bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-200/50"
-                            : "bg-surface-container-lowest border-outline-variant/20"
+            ? "bg-rose-50/60 dark:bg-rose-950/20 border-rose-200/50"
+            : isApresiasi
+                ? "bg-amber-50/60 dark:bg-amber-950/20 border-amber-200/50"
+                : isTebak
+                    ? "bg-blue-50/60 dark:bg-blue-950/20 border-blue-200/50"
+                    : isSambat
+                        ? "bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-200/50"
+                        : "bg-surface-container-lowest border-outline-variant/20"
             }`}>
             {/* Pinned badge */}
             {isPinned && (
@@ -107,11 +107,6 @@ export default function MemoryCard({ memory }: MemoryCardProps) {
                                 Dari: <span className="font-bold">{memory.sender}</span>
                             </p>
                         )}
-                        {memory.targets && memory.targets.length > 0 && (
-                            <p className="text-amber-700/80 text-xs font-medium mt-1">
-                                Untuk: <span className="font-bold">{memory.targets.join(", ")}</span>
-                            </p>
-                        )}
                     </div>
                 )}
                 {isTebak && (
@@ -130,12 +125,18 @@ export default function MemoryCard({ memory }: MemoryCardProps) {
                 <MemoryCaption
                     text={memory.caption}
                     className={`text-base leading-relaxed font-semibold not-italic ${isLove ? "text-rose-950"
-                            : isApresiasi ? "text-amber-950"
-                                : isTebak ? "text-blue-950"
-                                    : isSambat ? "text-emerald-950"
-                                        : "text-slate-900"
+                        : isApresiasi ? "text-amber-950"
+                            : isTebak ? "text-blue-950"
+                                : isSambat ? "text-emerald-950"
+                                    : "text-slate-900"
                         }`}
                 />
+
+                {memory.targets && memory.targets.length > 0 && (
+                    <p className="text-amber-700/80 text-xs font-medium mt-1">
+                        Untuk: <span className="font-bold">{memory.targets.join(", ")}</span>
+                    </p>
+                )}
 
                 <div className="mt-5">
                     <MemoryComments
